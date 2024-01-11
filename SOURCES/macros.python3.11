@@ -61,7 +61,7 @@
   if rpm.expand("%{?py3_shebang_flags}") ~= "" then
     command = command .. "-%{py3_shebang_flags}"
   end
-  command = command .. " %{_rpmconfigdir}/redhat/import_all_modules.py "
+  command = command .. " %{_rpmconfigdir}/redhat/import_all_modules_py3_11.py "
   -- handle multiline arguments correctly, see https://bugzilla.redhat.com/2018809
   local args=rpm.expand('%{?**}'):gsub("[%s\\\\]*%s+", " ")
   print(command .. args)

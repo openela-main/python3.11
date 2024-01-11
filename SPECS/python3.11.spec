@@ -16,11 +16,11 @@ URL: https://www.python.org/
 
 #  WARNING  When rebasing to a new Python version,
 #           remember to update the python3-docs package as well
-%global general_version %{pybasever}.2
+%global general_version %{pybasever}.5
 #global prerel ...
 %global upstream_version %{general_version}%{?prerel}
 Version: %{general_version}%{?prerel:~%{prerel}}
-Release: 2%{?dist}.2
+Release: 1%{?dist}
 License: Python
 
 
@@ -63,7 +63,7 @@ License: Python
 # If the rpmwheels condition is disabled, we use the bundled wheel packages
 # from Python with the versions below.
 # This needs to be manually updated when we update Python.
-%global pip_version 22.3.1
+%global pip_version 23.2.1
 %global setuptools_version 65.5.0
 
 # Expensive optimizations (mainly, profile-guided optimizations)
@@ -252,7 +252,10 @@ Source0: %{url}ftp/python/%{general_version}/Python-%{upstream_version}.tar.xz
 Source1: %{url}ftp/python/%{general_version}/Python-%{upstream_version}.tar.xz.asc
 # The release manager for Python 3.11 is pablogsal
 Source2: https://keybase.io/pablogsal/pgp_keys.asc
+
+# Sources for the python3.11-rpm-macros
 Source3: macros.python3.11
+Source4: import_all_modules_py3_11.py
 
 # A simple script to check timestamps of bytecode files
 # Run in check section with Python that is currently being built
@@ -358,27 +361,15 @@ Patch371: 00371-revert-bpo-1596321-fix-threading-_shutdown-for-the-main-thread-g
 # Upstream: https://bugs.python.org/issue46811
 Patch378: 00378-support-expat-2-4-5.patch
 
-# 00399 # 62614243969f1c717a02a1c65e55ef173ad9a6dd
-# CVE-2023-24329
-#
-# * gh-102153: Start stripping C0 control and space chars in `urlsplit` (GH-102508)
-#
-# `urllib.parse.urlsplit` has already been respecting the WHATWG spec a bit GH-25595.
-#
-# This adds more sanitizing to respect the "Remove any leading C0 control or space from input" [rule](https://url.spec.whatwg.org/GH-url-parsing:~:text=Remove%%20any%%20leading%%20and%%20trailing%%20C0%%20control%%20or%%20space%%20from%%20input.) in response to [CVE-2023-24329](https://nvd.nist.gov/vuln/detail/CVE-2023-24329).
-#
-# ---------
-Patch399: 00399-cve-2023-24329.patch
-
-# 00404 #
-# CVE-2023-40217
-#
-# Security fix for CVE-2023-40217: Bypass TLS handshake on closed sockets
-# Resolved upstream: https://github.com/python/cpython/issues/108310
-# Fixups added on top from:
-# https://github.com/python/cpython/issues/108342
-#
-Patch404: 00404-cve-2023-40217.patch
+# 00397 #
+# Filters for tarfile extraction (CVE-2007-4559, PEP-706)
+# First patch fixes determination of symlink targets, which were treated
+# as relative to the root of the archive,
+# rather than the directory containing the symlink.
+# Not yet upstream as of this writing.
+# The second patch is Red Hat configuration, see KB for documentation:
+# - https://access.redhat.com/articles/7004769
+Patch397: 00397-tarfile-filter.patch
 
 # (New patches go here ^^^)
 #
@@ -1120,6 +1111,10 @@ mkdir -p %{buildroot}%{rpmmacrodir}/
 install -m 644 %{SOURCE3} \
     %{buildroot}/%{rpmmacrodir}/
 
+# Add a script that is being used by python3.11-rpm-macros
+mkdir -p %{buildroot}%{_rpmconfigdir}/redhat
+install -m 644 %{SOURCE4} %{buildroot}%{_rpmconfigdir}/redhat/
+
 # All ghost files controlled by alternatives need to exist for the files
 # section check to succeed
 # - Don't list /usr/bin/python as a ghost file so `yum install /usr/bin/python`
@@ -1194,10 +1189,14 @@ CheckPython() {
   # test_freeze_simple_script is skipped, because it fails when bundled wheels
   #  are removed in Fedora.
   #  upstream report: https://bugs.python.org/issue45783
+  # test_check_probes is failing since it was introduced in 3.11.5,
+  # the test is skipped until it is fixed in upstream.
+  # see: https://github.com/python/cpython/issues/104280#issuecomment-1669249980
 
   LD_LIBRARY_PATH=$ConfDir $ConfDir/python -m test.regrtest \
     -wW --slowest -j0 --timeout=1800 \
     -i test_freeze_simple_script \
+    -i test_check_probes \
     %if %{with bootstrap}
     -x test_distutils \
     %endif
@@ -1318,6 +1317,7 @@ fi
 
 %files -n %{pkgname}-rpm-macros
 %{rpmmacrodir}/macros.python%{pybasever}
+%{_rpmconfigdir}/redhat/import_all_modules_py3_11.py
 
 %files -n %{pkgname}
 %doc README.rst
@@ -1821,11 +1821,25 @@ fi
 # ======================================================
 
 %changelog
-* Tue Sep 12 2023 Charalampos Stratakis <cstratak@redhat.com> - 3.11.2-2.2
-- Security fix for CVE-2023-40217
-Resolves: rhbz#2235789
+* Thu Sep 07 2023 Charalampos Stratakis <cstratak@redhat.com> - 3.11.5-1
+- Rebase to 3.11.5
+- Security fixes for CVE-2023-40217 and CVE-2023-41105
+Resolves: RHEL-3047, RHEL-3267
 
-* Wed May 24 2023 Charalampos Stratakis <cstratak@redhat.com> - 3.11.2-2.1
+* Thu Aug 10 2023 Tomas Orsava <torsava@redhat.com> - 3.11.4-4
+- Add the import_all_modules_py3_11.py file for the python3.11-rpm-macros subpackage
+Resolves: rhbz#2207631
+
+* Wed Aug 09 2023 Petr Viktorin <pviktori@redhat.com> - 3.11.4-3
+- Fix symlink handling in the fix for CVE-2023-24329
+Resolves: rhbz#263261
+
+* Fri Jun 30 2023 Charalampos Stratakis <cstratak@redhat.com> - 3.11.4-2
+- Security fix for CVE-2007-4559
+Resolves: rhbz#263261
+
+* Mon Jun 26 2023 Charalampos Stratakis <cstratak@redhat.com> - 3.11.4-1
+- Update to 3.11.4
 - Security fix for CVE-2023-24329
 Resolves: rhbz#2173917
 
