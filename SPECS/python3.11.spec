@@ -16,7 +16,7 @@ URL: https://www.python.org/
 
 #  WARNING  When rebasing to a new Python version,
 #           remember to update the python3-docs package as well
-%global general_version %{pybasever}.5
+%global general_version %{pybasever}.7
 #global prerel ...
 %global upstream_version %{general_version}%{?prerel}
 Version: %{general_version}%{?prerel:~%{prerel}}
@@ -341,6 +341,20 @@ Patch371: 00371-revert-bpo-1596321-fix-threading-_shutdown-for-the-main-thread-g
 # The second patch is Red Hat configuration, see KB for documentation:
 # - https://access.redhat.com/articles/7004769
 Patch397: 00397-tarfile-filter.patch
+
+# 00415 #
+# [CVE-2023-27043] gh-102988: Reject malformed addresses in email.parseaddr() (#111116)
+#
+# Detect email address parsing errors and return empty tuple to
+# indicate the parsing error (old API). Add an optional 'strict'
+# parameter to getaddresses() and parseaddr() functions. Patch by
+# Thomas Dwyer.
+#
+# Upstream PR: https://github.com/python/cpython/pull/111116
+#
+# Second patch implmenets the possibility to restore the old behavior via
+# config file or environment variable.
+Patch415: 00415-cve-2023-27043-gh-102988-reject-malformed-addresses-in-email-parseaddr-111116.patch
 
 # (New patches go here ^^^)
 #
@@ -936,6 +950,10 @@ for tool in pygettext msgfmt; do
   cp -p Tools/i18n/${tool}.py %{buildroot}%{_bindir}/${tool}%{pybasever}.py
   ln -s ${tool}%{pybasever}.py %{buildroot}%{_bindir}/${tool}3.py
 done
+
+# Install missing test data
+# Fixed upstream: https://github.com/python/cpython/pull/112784
+cp -rp Lib/test/regrtestdata/ %{buildroot}%{pylibdir}/test/
 
 # Switch all shebangs to refer to the specific Python version.
 # This currently only covers files matching ^[a-zA-Z0-9_]+\.py$,
@@ -1613,6 +1631,14 @@ CheckPython optimized
 # ======================================================
 
 %changelog
+* Mon Jan 22 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.7-1
+- Rebase to 3.11.7
+Resolves: RHEL-20233
+
+* Tue Jan 09 2024 Lumír Balhar <lbalhar@redhat.com> - 3.11.5-2
+- Security fix for CVE-2023-27043
+Resolves: RHEL-21325
+
 * Thu Sep 07 2023 Charalampos Stratakis <cstratak@redhat.com> - 3.11.5-1
 - Rebase to 3.11.5
 - Security fixes for CVE-2023-40217 and CVE-2023-41105
