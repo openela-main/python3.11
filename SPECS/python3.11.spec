@@ -16,7 +16,7 @@ URL: https://www.python.org/
 
 #  WARNING  When rebasing to a new Python version,
 #           remember to update the python3-docs package as well
-%global general_version %{pybasever}.5
+%global general_version %{pybasever}.7
 #global prerel ...
 %global upstream_version %{general_version}%{?prerel}
 Version: %{general_version}%{?prerel:~%{prerel}}
@@ -371,6 +371,20 @@ Patch378: 00378-support-expat-2-4-5.patch
 # - https://access.redhat.com/articles/7004769
 Patch397: 00397-tarfile-filter.patch
 
+# 00415 #
+# [CVE-2023-27043] gh-102988: Reject malformed addresses in email.parseaddr() (#111116)
+#
+# Detect email address parsing errors and return empty tuple to
+# indicate the parsing error (old API). Add an optional 'strict'
+# parameter to getaddresses() and parseaddr() functions. Patch by
+# Thomas Dwyer.
+#
+# Upstream PR: https://github.com/python/cpython/pull/111116
+#
+# Second patch implmenets the possibility to restore the old behavior via
+# config file or environment variable.
+Patch415: 00415-cve-2023-27043-gh-102988-reject-malformed-addresses-in-email-parseaddr-111116.patch
+
 # (New patches go here ^^^)
 #
 # When adding new patches to "python" and "python3" in Fedora, EL, etc.,
@@ -389,10 +403,10 @@ Patch397: 00397-tarfile-filter.patch
 # Descriptions, and metadata for subpackages
 # ==========================================
 
-# Require alternatives version that implements the --keep-foreign flag
-Requires:         alternatives >= 1.19.1-1
-Requires(post):   alternatives >= 1.19.1-1
-Requires(postun): alternatives >= 1.19.1-1
+# Require alternatives version that implements the --keep-foreign flag and fixes rhbz#2203820
+Requires:         alternatives >= 1.19.2-1
+Requires(post):   alternatives >= 1.19.2-1
+Requires(postun): alternatives >= 1.19.2-1
 
 # When the user tries to `yum install python`, yum will list this package among
 # the possible alternatives
@@ -540,8 +554,8 @@ Requires: %{pkgname}-libs%{?_isa} = %{version}-%{release}
 Requires: (python-rpm-macros if rpm-build)
 Requires: (python3-rpm-macros if rpm-build)
 
-# Require alternatives version that implements the --keep-foreign flag
-Requires(postun): alternatives >= 1.19.1-1
+# Require alternatives version that implements the --keep-foreign flag and fixes rhbz#2203820
+Requires(postun): alternatives >= 1.19.2-1
 
 # python3.11 installs the alternatives master symlink to which we attach a slave
 Requires(post): %{pkgname}
@@ -594,8 +608,8 @@ Provides: idle = %{version}-%{release}
 Provides: %{pkgname}-tools = %{version}-%{release}
 Provides: %{pkgname}-tools%{?_isa} = %{version}-%{release}
 
-# Require alternatives version that implements the --keep-foreign flag
-Requires(postun): alternatives >= 1.19.1-1
+# Require alternatives version that implements the --keep-foreign flag and fixes rhbz#2203820
+Requires(postun): alternatives >= 1.19.2-1
 
 # python3.11 installs the alternatives master symlink to which we attach a slave
 Requires(post): %{pkgname}
@@ -660,8 +674,8 @@ Requires: %{pkgname}-idle%{?_isa} = %{version}-%{release}
 
 %unversioned_obsoletes_of_python3_X_if_main debug
 
-# Require alternatives version that implements the --keep-foreign flag
-Requires(postun): alternatives >= 1.19.1-1
+# Require alternatives version that implements the --keep-foreign flag and fixes rhbz#2203820
+Requires(postun): alternatives >= 1.19.2-1
 
 # python3.11 installs the alternatives master symlink to which we attach a slave
 Requires(post): %{pkgname}
@@ -1009,6 +1023,10 @@ for tool in pygettext msgfmt; do
   ln -s ${tool}%{pybasever}.py %{buildroot}%{_bindir}/${tool}3.py
 done
 
+# Install missing test data
+# Fixed upstream: https://github.com/python/cpython/pull/112784
+cp -rp Lib/test/regrtestdata/ %{buildroot}%{pylibdir}/test/
+
 # Switch all shebangs to refer to the specific Python version.
 # This currently only covers files matching ^[a-zA-Z0-9_]+\.py$,
 # so handle files named using other naming scheme separately.
@@ -1299,7 +1317,7 @@ if [ $1 -eq 0 ]; then
 fi
 
 %post idle
-alternatives --keep-foreign --add-slave python3 %{_bindir}/python3.11 \
+alternatives --add-slave python3 %{_bindir}/python3.11 \
      %{_bindir}/idle3 \
      idle3 \
      %{_bindir}/idle3.11
@@ -1307,7 +1325,7 @@ alternatives --keep-foreign --add-slave python3 %{_bindir}/python3.11 \
 %postun idle
 # Do this only during uninstall process (not during update)
 if [ $1 -eq 0 ]; then
-     alternatives --remove-slave python3 %{_bindir}/python3.11 \
+     alternatives --keep-foreign --remove-slave python3 %{_bindir}/python3.11 \
         idle3
 fi
 
@@ -1821,6 +1839,14 @@ fi
 # ======================================================
 
 %changelog
+* Mon Jan 22 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.7-1
+- Rebase to 3.11.7
+Resolves: RHEL-21915
+
+* Tue Jan 09 2024 Lumír Balhar <lbalhar@redhat.com> - 3.11.5-2
+- Security fix for CVE-2023-27043
+Resolves: RHEL-7842
+
 * Thu Sep 07 2023 Charalampos Stratakis <cstratak@redhat.com> - 3.11.5-1
 - Rebase to 3.11.5
 - Security fixes for CVE-2023-40217 and CVE-2023-41105

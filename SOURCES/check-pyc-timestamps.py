@@ -17,9 +17,9 @@ LEVELS = (None, 1, 2)
 not_compiled = [
     '/usr/bin/*',
     '/usr/lib/rpm/redhat/*',
-    '*/test/bad_coding.py',
-    '*/test/bad_coding2.py',
-    '*/test/badsyntax_*.py',
+    '*/test/*/bad_coding.py',
+    '*/test/*/bad_coding2.py',
+    '*/test/*/badsyntax_*.py',
     '*/lib2to3/tests/data/bom.py',
     '*/lib2to3/tests/data/crlf.py',
     '*/lib2to3/tests/data/different_encoding.py',
