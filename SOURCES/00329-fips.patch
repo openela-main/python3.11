@@ -1,4 +1,4 @@
-From ecc5137120f471c22ff6dcb1bd128561c31e023c Mon Sep 17 00:00:00 2001
+From 929f90dc647114675317ed1ab65511003d9daebc Mon Sep 17 00:00:00 2001
 From: Charalampos Stratakis <cstratak@redhat.com>
 Date: Thu, 12 Dec 2019 16:58:31 +0100
 Subject: [PATCH 1/7] Expose blake2b and blake2s hashes from OpenSSL
@@ -205,10 +205,10 @@ index 5d84f4a..011026a 100644
 -/*[clinic end generated code: output=69f2374071bff707 input=a9049054013a1b77]*/
 +/*[clinic end generated code: output=c6a9af5563972eda input=a9049054013a1b77]*/
 -- 
-2.43.0
+2.44.0
 
 
-From 0198d467525e79cb4be4418708719af3eaee7a40 Mon Sep 17 00:00:00 2001
+From a0a19a8057c0b674000e921766e39684f92f4cd8 Mon Sep 17 00:00:00 2001
 From: Petr Viktorin <pviktori@redhat.com>
 Date: Thu, 1 Aug 2019 17:57:05 +0200
 Subject: [PATCH 2/7] Use a stronger hash in multiprocessing handshake
@@ -220,7 +220,7 @@ https://bugs.python.org/issue17258
  1 file changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/Lib/multiprocessing/connection.py b/Lib/multiprocessing/connection.py
-index 8b81f99..69c0b7e 100644
+index 59c61d2..7fc594e 100644
 --- a/Lib/multiprocessing/connection.py
 +++ b/Lib/multiprocessing/connection.py
 @@ -43,6 +43,10 @@ BUFSIZE = 8192
@@ -234,7 +234,7 @@ index 8b81f99..69c0b7e 100644
  _mmap_counter = itertools.count()
  
  default_family = 'AF_INET'
-@@ -752,7 +756,7 @@ def deliver_challenge(connection, authkey):
+@@ -753,7 +757,7 @@ def deliver_challenge(connection, authkey):
              "Authkey must be bytes, not {0!s}".format(type(authkey)))
      message = os.urandom(MESSAGE_LENGTH)
      connection.send_bytes(CHALLENGE + message)
@@ -243,7 +243,7 @@ index 8b81f99..69c0b7e 100644
      response = connection.recv_bytes(256)        # reject large message
      if response == digest:
          connection.send_bytes(WELCOME)
-@@ -768,7 +772,7 @@ def answer_challenge(connection, authkey):
+@@ -769,7 +773,7 @@ def answer_challenge(connection, authkey):
      message = connection.recv_bytes(256)         # reject large message
      assert message[:len(CHALLENGE)] == CHALLENGE, 'message = %r' % message
      message = message[len(CHALLENGE):]
@@ -253,10 +253,10 @@ index 8b81f99..69c0b7e 100644
      response = connection.recv_bytes(256)        # reject large message
      if response != WELCOME:
 -- 
-2.43.0
+2.44.0
 
 
-From a7822e2e1f21529e9730885bd8c9c6ab7c704d5b Mon Sep 17 00:00:00 2001
+From a6ec352e5f2c38ccbd4ca3beffbd39e8a350319e Mon Sep 17 00:00:00 2001
 From: Petr Viktorin <pviktori@redhat.com>
 Date: Thu, 25 Jul 2019 17:19:06 +0200
 Subject: [PATCH 3/7] Disable Python's hash implementations in FIPS mode,
@@ -446,10 +446,10 @@ index 56ae7a5..45fb403 100644
 +    if (_Py_hashlib_fips_error(exc, name)) return NULL; \
 +} while (0)
 diff --git a/configure.ac b/configure.ac
-index 52d5c1f..56aff78 100644
+index 7b4000f..8e2f0ad 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -7069,7 +7069,8 @@ PY_STDLIB_MOD([_sha512], [test "$with_builtin_sha512" = yes])
+@@ -7070,7 +7070,8 @@ PY_STDLIB_MOD([_sha512], [test "$with_builtin_sha512" = yes])
  PY_STDLIB_MOD([_sha3], [test "$with_builtin_sha3" = yes])
  PY_STDLIB_MOD([_blake2],
    [test "$with_builtin_blake2" = yes], [],
@@ -460,10 +460,10 @@ index 52d5c1f..56aff78 100644
  PY_STDLIB_MOD([_crypt],
    [], [test "$ac_cv_crypt_crypt" = yes],
 -- 
-2.43.0
+2.44.0
 
 
-From e9ce6d33544559172dbebbe0c0dfba2757c62331 Mon Sep 17 00:00:00 2001
+From 3a52b3f1ee7735913584ced6440b4241c9d8104d Mon Sep 17 00:00:00 2001
 From: Charalampos Stratakis <cstratak@redhat.com>
 Date: Fri, 29 Jan 2021 14:16:21 +0100
 Subject: [PATCH 4/7] Use python's fall back crypto implementations only if we
@@ -623,10 +623,10 @@ index 01d12f5..a7cdb07 100644
      def test_pbkdf2_hmac_py(self):
          with warnings_helper.check_warnings():
 -- 
-2.43.0
+2.44.0
 
 
-From 641c617775b6973ed84711a2602ba190fe064474 Mon Sep 17 00:00:00 2001
+From f64047f079725f4a4985edc5532a8a24035040ad Mon Sep 17 00:00:00 2001
 From: Charalampos Stratakis <cstratak@redhat.com>
 Date: Wed, 31 Jul 2019 15:43:43 +0200
 Subject: [PATCH 5/7] Test equivalence of hashes for the various digests with
@@ -783,21 +783,21 @@ index a7cdb07..c071f28 100644
  class KDFTests(unittest.TestCase):
  
 -- 
-2.43.0
+2.44.0
 
 
-From a706c8342f0f9307d44c43c203702e1476fe73b4 Mon Sep 17 00:00:00 2001
+From d769d1de3fc7fdb9e5f8164108f130301639889a Mon Sep 17 00:00:00 2001
 From: Petr Viktorin <pviktori@redhat.com>
 Date: Mon, 26 Aug 2019 19:39:48 +0200
 Subject: [PATCH 6/7] Guard against Python HMAC in FIPS mode
 
 ---
- Lib/hmac.py           | 13 +++++++++----
+ Lib/hmac.py           | 12 +++++++++---
  Lib/test/test_hmac.py | 10 ++++++++++
- 2 files changed, 19 insertions(+), 4 deletions(-)
+ 2 files changed, 19 insertions(+), 3 deletions(-)
 
 diff --git a/Lib/hmac.py b/Lib/hmac.py
-index 8b4f920..20ef96c 100644
+index 8b4eb2f..8930bda 100644
 --- a/Lib/hmac.py
 +++ b/Lib/hmac.py
 @@ -16,8 +16,9 @@ else:
@@ -812,16 +812,9 @@ index 8b4f920..20ef96c 100644
  
  # The size of the digests returned by HMAC depends on the underlying
  # hashing module used.  Use digest_size from the instance of HMAC instead.
-@@ -48,17 +49,18 @@ class HMAC:
-                    msg argument.  Passing it as a keyword argument is
-                    recommended, though not required for legacy API reasons.
-         """
--
-         if not isinstance(key, (bytes, bytearray)):
-             raise TypeError("key: expected bytes or bytearray, but got %r" % type(key).__name__)
- 
+@@ -55,10 +56,12 @@ class HMAC:
          if not digestmod:
-             raise TypeError("Missing required parameter 'digestmod'.")
+             raise TypeError("Missing required argument 'digestmod'.")
  
 -        if _hashopenssl and isinstance(digestmod, (str, _functype)):
 +        if _hashopenssl.get_fips_mode() or (_hashopenssl and isinstance(digestmod, (str, _functype))):
@@ -833,7 +826,7 @@ index 8b4f920..20ef96c 100644
                  self._init_old(key, msg, digestmod)
          else:
              self._init_old(key, msg, digestmod)
-@@ -69,6 +71,9 @@ class HMAC:
+@@ -69,6 +72,9 @@ class HMAC:
          self.block_size = self._hmac.block_size
  
      def _init_old(self, key, msg, digestmod):
@@ -844,7 +837,7 @@ index 8b4f920..20ef96c 100644
              digest_cons = digestmod
          elif isinstance(digestmod, str):
 diff --git a/Lib/test/test_hmac.py b/Lib/test/test_hmac.py
-index a39a2c4..0742a1c 100644
+index 1502fba..e40ca4b 100644
 --- a/Lib/test/test_hmac.py
 +++ b/Lib/test/test_hmac.py
 @@ -5,6 +5,7 @@ import hashlib
@@ -883,7 +876,7 @@ index a39a2c4..0742a1c 100644
      @unittest.skipUnless(sha256_module is not None, 'need _sha256')
      def test_with_sha256_module(self):
          h = hmac.HMAC(b"key", b"hash this!", digestmod=sha256_module.sha256)
-@@ -481,6 +489,7 @@ class SanityTestCase(unittest.TestCase):
+@@ -489,6 +497,7 @@ class UpdateTestCase(unittest.TestCase):
  
  class CopyTestCase(unittest.TestCase):
  
@@ -891,7 +884,7 @@ index a39a2c4..0742a1c 100644
      @hashlib_helper.requires_hashdigest('sha256')
      def test_attributes_old(self):
          # Testing if attributes are of same type.
-@@ -492,6 +501,7 @@ class CopyTestCase(unittest.TestCase):
+@@ -500,6 +509,7 @@ class CopyTestCase(unittest.TestCase):
          self.assertEqual(type(h1._outer), type(h2._outer),
              "Types of outer don't match.")
  
@@ -900,10 +893,10 @@ index a39a2c4..0742a1c 100644
      def test_realcopy_old(self):
          # Testing if the copy method created a real copy.
 -- 
-2.43.0
+2.44.0
 
 
-From 03f1dedfe5d29af20fb3686d76b045384d41d8dd Mon Sep 17 00:00:00 2001
+From 142e0b03f8cbfbfbeb58c54e45fc51f1ff4a903e Mon Sep 17 00:00:00 2001
 From: Petr Viktorin <encukou@gmail.com>
 Date: Wed, 25 Aug 2021 16:44:43 +0200
 Subject: [PATCH 7/7] Disable hash-based PYCs in FIPS mode
@@ -946,10 +939,10 @@ index db52725..5fca65e 100644
          return PycInvalidationMode.CHECKED_HASH
      else:
 diff --git a/Lib/test/support/__init__.py b/Lib/test/support/__init__.py
-index dc7a6e6..646b328 100644
+index 059542c..152bb91 100644
 --- a/Lib/test/support/__init__.py
 +++ b/Lib/test/support/__init__.py
-@@ -2203,6 +2203,20 @@ def sleeping_retry(timeout, err_msg=None, /,
+@@ -2204,6 +2204,20 @@ def sleeping_retry(timeout, err_msg=None, /,
          delay = min(delay * 2, max_delay)
  
  
@@ -1020,10 +1013,10 @@ index 9cd92ad..4ec29a1 100644
          with open(pyc, 'rb') as fp:
              data = fp.read()
 diff --git a/Lib/test/test_imp.py b/Lib/test/test_imp.py
-index 4062afd..6bc276d 100644
+index aa67cc3..594a1b5 100644
 --- a/Lib/test/test_imp.py
 +++ b/Lib/test/test_imp.py
-@@ -352,6 +352,7 @@ class ImportTests(unittest.TestCase):
+@@ -355,6 +355,7 @@ class ImportTests(unittest.TestCase):
          import _frozen_importlib
          self.assertEqual(_frozen_importlib.__spec__.origin, "frozen")
  
@@ -1031,7 +1024,7 @@ index 4062afd..6bc276d 100644
      def test_source_hash(self):
          self.assertEqual(_imp.source_hash(42, b'hi'), b'\xfb\xd9G\x05\xaf$\x9b~')
          self.assertEqual(_imp.source_hash(43, b'hi'), b'\xd0/\x87C\xccC\xff\xe2')
-@@ -371,6 +372,7 @@ class ImportTests(unittest.TestCase):
+@@ -374,6 +375,7 @@ class ImportTests(unittest.TestCase):
              res = script_helper.assert_python_ok(*args)
              self.assertEqual(res.out.strip().decode('utf-8'), expected)
  
@@ -1092,7 +1085,7 @@ index 378dcbe..7b223a1 100644
          with util.create_modules('_temp') as mapping:
              bc_path = self.manipulate_bytecode(
 diff --git a/Lib/test/test_py_compile.py b/Lib/test/test_py_compile.py
-index 9b420d2..dd6460a 100644
+index 7f24abe..229ffb9 100644
 --- a/Lib/test/test_py_compile.py
 +++ b/Lib/test/test_py_compile.py
 @@ -143,13 +143,16 @@ class PyCompileTestsBase:
@@ -1154,7 +1147,7 @@ index 59a5200..81fadb3 100644
      def test_checked_hash_based_change_pyc(self):
          source = b"state = 'old'"
 diff --git a/Python/import.c b/Python/import.c
-index 39144d3..b439059 100644
+index c4e2145..e19e42e 100644
 --- a/Python/import.c
 +++ b/Python/import.c
 @@ -2449,6 +2449,26 @@ static PyObject *
@@ -1185,5 +1178,5 @@ index 39144d3..b439059 100644
          uint64_t x;
          char data[sizeof(uint64_t)];
 -- 
-2.43.0
+2.44.0
 

@@ -16,7 +16,7 @@ URL: https://www.python.org/
 
 #  WARNING  When rebasing to a new Python version,
 #           remember to update the python3-docs package as well
-%global general_version %{pybasever}.7
+%global general_version %{pybasever}.9
 #global prerel ...
 %global upstream_version %{general_version}%{?prerel}
 Version: %{general_version}%{?prerel:~%{prerel}}
@@ -63,7 +63,7 @@ License: Python
 # If the rpmwheels condition is disabled, we use the bundled wheel packages
 # from Python with the versions below.
 # This needs to be manually updated when we update Python.
-%global pip_version 23.2.1
+%global pip_version 24.0
 %global setuptools_version 65.5.0
 
 # Expensive optimizations (mainly, profile-guided optimizations)
@@ -384,6 +384,12 @@ Patch397: 00397-tarfile-filter.patch
 # Second patch implmenets the possibility to restore the old behavior via
 # config file or environment variable.
 Patch415: 00415-cve-2023-27043-gh-102988-reject-malformed-addresses-in-email-parseaddr-111116.patch
+
+# 00422 #
+# Fix the test suite for releases of expat < 2.6.0
+# which backport the CVE-2023-52425 fix.
+# Downstream only.
+Patch422: 00422-fix-expat-tests.patch
 
 # (New patches go here ^^^)
 #
@@ -1839,6 +1845,12 @@ fi
 # ======================================================
 
 %changelog
+* Mon Apr 22 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.9-1
+- Rebase to 3.11.9
+- Security fixes for CVE-2023-6597 and CVE-2024-0450
+- Fix expat tests for the latest expat security release
+Resolves: RHEL-33672, RHEL-33684
+
 * Mon Jan 22 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.7-1
 - Rebase to 3.11.7
 Resolves: RHEL-21915

@@ -1,0 +1,75 @@
+From 670984c96eea60488c5355b4cf535c1ee3cf081a Mon Sep 17 00:00:00 2001
+From: rpm-build <rpm-build>
+Date: Wed, 24 Apr 2024 04:24:16 +0200
+Subject: [PATCH] Fix xml tests
+
+---
+ Lib/test/test_pyexpat.py   | 3 +++
+ Lib/test/test_sax.py       | 2 ++
+ Lib/test/test_xml_etree.py | 6 ++++++
+ 3 files changed, 11 insertions(+)
+
+diff --git a/Lib/test/test_pyexpat.py b/Lib/test/test_pyexpat.py
+index 44bd1de..5976fa0 100644
+--- a/Lib/test/test_pyexpat.py
++++ b/Lib/test/test_pyexpat.py
+@@ -3,6 +3,7 @@
+ 
+ import os
+ import platform
++import pyexpat
+ import sys
+ import sysconfig
+ import unittest
+@@ -793,6 +794,8 @@ class ReparseDeferralTest(unittest.TestCase):
+ 
+         self.assertEqual(started, ['doc'])
+ 
++    @unittest.skipIf(pyexpat.version_info < (2, 6, 0),
++                     "Reparse deferral not defined for libexpat < 2.6.0")
+     def test_reparse_deferral_disabled(self):
+         started = []
+ 
+diff --git a/Lib/test/test_sax.py b/Lib/test/test_sax.py
+index 9b3014a..5960de1 100644
+--- a/Lib/test/test_sax.py
++++ b/Lib/test/test_sax.py
+@@ -1240,6 +1240,8 @@ class ExpatReaderTest(XmlTestBase):
+ 
+         self.assertEqual(result.getvalue(), start + b"<doc></doc>")
+ 
++    @unittest.skipIf(pyexpat.version_info < (2, 6, 0),
++                     "Reparse deferral not defined for libexpat < 2.6.0")
+     def test_flush_reparse_deferral_disabled(self):
+         result = BytesIO()
+         xmlgen = XMLGenerator(result)
+diff --git a/Lib/test/test_xml_etree.py b/Lib/test/test_xml_etree.py
+index 8becafb..5e9b6b5 100644
+--- a/Lib/test/test_xml_etree.py
++++ b/Lib/test/test_xml_etree.py
+@@ -1424,9 +1424,13 @@ class XMLPullParserTest(unittest.TestCase):
+         self.assert_event_tags(parser, [('end', 'root')])
+         self.assertIsNone(parser.close())
+ 
++    @unittest.skipIf(pyexpat.version_info < (2, 6, 0),
++        "test not compatible with the latest expat security release")
+     def test_simple_xml_chunk_1(self):
+         self.test_simple_xml(chunk_size=1, flush=True)
+ 
++    @unittest.skipIf(pyexpat.version_info < (2, 6, 0),
++        "test not compatible with the latest expat security release")
+     def test_simple_xml_chunk_5(self):
+         self.test_simple_xml(chunk_size=5, flush=True)
+ 
+@@ -1651,6 +1655,8 @@ class XMLPullParserTest(unittest.TestCase):
+ 
+         self.assert_event_tags(parser, [('end', 'doc')])
+ 
++    @unittest.skipIf(pyexpat.version_info < (2, 6, 0),
++                     "Reparse deferral not defined for libexpat < 2.6.0")
+     def test_flush_reparse_deferral_disabled(self):
+         parser = ET.XMLPullParser(events=('start', 'end'))
+ 
+-- 
+2.44.0
+
