@@ -20,7 +20,7 @@ URL: https://www.python.org/
 #global prerel ...
 %global upstream_version %{general_version}%{?prerel}
 Version: %{general_version}%{?prerel:~%{prerel}}
-Release: 1%{?dist}
+Release: 1%{?dist}.1
 License: Python
 
 
@@ -355,6 +355,20 @@ Patch397: 00397-tarfile-filter.patch
 # Second patch implmenets the possibility to restore the old behavior via
 # config file or environment variable.
 Patch415: 00415-cve-2023-27043-gh-102988-reject-malformed-addresses-in-email-parseaddr-111116.patch
+
+# 00422 #
+# Fix tests for XMLPullParser with Expat 2.6.0
+#
+# Feeding the parser by too small chunks defers parsing to prevent
+# CVE-2023-52425. Future versions of Expat may be more reactive.
+Patch422: 00422-fix-tests-for-xmlpullparser-with-expat-2-6-0.patch
+
+# 00426 #
+# CVE-2023-6597: Path traversal on tempfile.TemporaryDirectory
+# Fixed upstream:
+# https://github.com/python/cpython/commit/5585334d772b253a01a6730e8202ffb1607c3d25
+# Tracking bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2276518
+Patch426: 00426-CVE-2023-6597.patch
 
 # (New patches go here ^^^)
 #
@@ -1631,6 +1645,11 @@ CheckPython optimized
 # ======================================================
 
 %changelog
+* Thu May 16 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.7-1.1
+- Security fix for CVE-2023-6597
+- Fix tests for XMLPullParser with Expat with fixed CVE
+Resolves: RHEL-33884
+
 * Mon Jan 22 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.7-1
 - Rebase to 3.11.7
 Resolves: RHEL-20233
