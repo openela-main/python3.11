@@ -20,7 +20,7 @@ URL: https://www.python.org/
 #global prerel ...
 %global upstream_version %{general_version}%{?prerel}
 Version: %{general_version}%{?prerel:~%{prerel}}
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: Python
 
 
@@ -1845,6 +1845,10 @@ fi
 # ======================================================
 
 %changelog
+* Tue Jun 11 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.9-2
+- Enable importing of hash-based .pyc files under FIPS mode
+Resolves: RHEL-40783
+
 * Mon Apr 22 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.9-1
 - Rebase to 3.11.9
 - Security fixes for CVE-2023-6597 and CVE-2024-0450
