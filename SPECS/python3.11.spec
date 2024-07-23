@@ -20,7 +20,7 @@ URL: https://www.python.org/
 #global prerel ...
 %global upstream_version %{general_version}%{?prerel}
 Version: %{general_version}%{?prerel:~%{prerel}}
-Release: 1%{?dist}.1
+Release: 1%{?dist}.3
 License: Python
 
 
@@ -369,6 +369,11 @@ Patch422: 00422-fix-tests-for-xmlpullparser-with-expat-2-6-0.patch
 # https://github.com/python/cpython/commit/5585334d772b253a01a6730e8202ffb1607c3d25
 # Tracking bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2276518
 Patch426: 00426-CVE-2023-6597.patch
+
+# 00431 #
+# CVE-2024-4032: incorrect IPv4 and IPv6 private ranges
+# Upstream issue: https://github.com/python/cpython/issues/113171
+Patch431: 00431-CVE-2024-4032.patch
 
 # (New patches go here ^^^)
 #
@@ -1645,6 +1650,14 @@ CheckPython optimized
 # ======================================================
 
 %changelog
+* Thu Jul 04 2024 Lumír Balhar <lbalhar@redhat.com> - 3.11.7-1.3
+- Security fix for CVE-2024-4032
+Resolves: RHEL-44097
+
+* Tue Jun 11 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.7-1.2
+- Enable importing of hash-based .pyc files under FIPS mode
+Resolves: RHEL-40785
+
 * Thu May 16 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.7-1.1
 - Security fix for CVE-2023-6597
 - Fix tests for XMLPullParser with Expat with fixed CVE
