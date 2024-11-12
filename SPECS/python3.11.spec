@@ -16,11 +16,11 @@ URL: https://www.python.org/
 
 #  WARNING  When rebasing to a new Python version,
 #           remember to update the python3-docs package as well
-%global general_version %{pybasever}.7
+%global general_version %{pybasever}.9
 #global prerel ...
 %global upstream_version %{general_version}%{?prerel}
 Version: %{general_version}%{?prerel:~%{prerel}}
-Release: 1%{?dist}.6
+Release: 7%{?dist}
 License: Python
 
 
@@ -63,7 +63,7 @@ License: Python
 # If the rpmwheels condition is disabled, we use the bundled wheel packages
 # from Python with the versions below.
 # This needs to be manually updated when we update Python.
-%global pip_version 23.2.1
+%global pip_version 24.0
 %global setuptools_version 65.5.0
 
 # Expensive optimizations (mainly, profile-guided optimizations)
@@ -144,6 +144,13 @@ License: Python
 %global py_SOVERSION 1.0
 %global py_INSTSONAME_optimized libpython%{LDVERSION_optimized}.so.%{py_SOVERSION}
 %global py_INSTSONAME_debug     libpython%{LDVERSION_debug}.so.%{py_SOVERSION}
+
+# The -O flag for the compiler, optimized builds
+# https://fedoraproject.org/wiki/Changes/Python_built_with_gcc_O3
+%global optflags_optimized -O3
+# The -O flag for the compiler, debug builds
+# -Wno-cpp avoids some warnings with -O0
+%global optflags_debug -O0 -Wno-cpp
 
 # Disable automatic bytecompilation. The python3 binary is not yet be
 # available in /usr/bin when Python is built. Also, the bytecompilation fails
@@ -357,22 +364,15 @@ Patch397: 00397-tarfile-filter.patch
 Patch415: 00415-cve-2023-27043-gh-102988-reject-malformed-addresses-in-email-parseaddr-111116.patch
 
 # 00422 #
-# Fix tests for XMLPullParser with Expat 2.6.0
-#
-# Feeding the parser by too small chunks defers parsing to prevent
-# CVE-2023-52425. Future versions of Expat may be more reactive.
-Patch422: 00422-fix-tests-for-xmlpullparser-with-expat-2-6-0.patch
-
-# 00426 #
-# CVE-2023-6597: Path traversal on tempfile.TemporaryDirectory
-# Fixed upstream:
-# https://github.com/python/cpython/commit/5585334d772b253a01a6730e8202ffb1607c3d25
-# Tracking bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2276518
-Patch426: 00426-CVE-2023-6597.patch
+# Fix the test suite for releases of expat < 2.6.0
+# which backport the CVE-2023-52425 fix.
+# Downstream only.
+Patch422: 00422-fix-expat-tests.patch
 
 # 00431 #
-# CVE-2024-4032: incorrect IPv4 and IPv6 private ranges
-# Upstream issue: https://github.com/python/cpython/issues/113171
+# Security fix for CVE-2024-4032: incorrect IPv4 and IPv6 private ranges
+# Resolved upstream: https://github.com/python/cpython/issues/113171
+# Tracking bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2292921
 Patch431: 00431-CVE-2024-4032.patch
 
 # 00435 # d33a3c90daa3d5d2d7e67f6e9264e5438d9608a0
@@ -397,11 +397,6 @@ Patch435: 00435-gh-121650-encode-newlines-in-headers-and-verify-headers-are-soun
 # 00436 # 1acd6db660ad1124ab7ae449a841608dd9d9062d
 # [CVE-2024-8088] gh-122905: Sanitize names in zipfile.Path.
 Patch436: 00436-cve-2024-8088-gh-122905-sanitize-names-in-zipfile-path.patch
-
-# 00437 #
-# CVE-2024-6232: gh-121285: Remove backtracking when parsing tarfile headers
-# Resolved upstream: https://github.com/python/cpython/issues/121285
-Patch437: 00437-CVE-2024-6232.patch
 
 # (New patches go here ^^^)
 #
@@ -773,6 +768,7 @@ BuildPython() {
   ConfName=$1
   ExtraConfigArgs=$2
   MoreCFlags=$3
+  MoreCFlagsNodist=$4
 
   # Each build is done in its own directory
   ConfDir=build/$ConfName
@@ -812,7 +808,7 @@ BuildPython() {
   $ExtraConfigArgs \
   %{nil}
 
-%global flags_override EXTRA_CFLAGS="$MoreCFlags" CFLAGS_NODIST="$CFLAGS_NODIST $MoreCFlags"
+%global flags_override EXTRA_CFLAGS="$MoreCFlags" CFLAGS_NODIST="$CFLAGS_NODIST $MoreCFlags $MoreCFlagsNodist"
 
 %if %{without bootstrap}
   # Regenerate generated files (needs python3)
@@ -835,12 +831,14 @@ BuildPython() {
 # See also: https://bugzilla.redhat.com/show_bug.cgi?id=1818857
 BuildPython debug \
   "--without-ensurepip --with-pydebug" \
-  "-O0 -Wno-cpp"
+  "%{optflags_debug}" \
+  ""
 %endif # with debug_build
 
 BuildPython optimized \
   "--without-ensurepip %{optimizations_flag}" \
-  ""
+  "" \
+  "%{optflags_optimized}"
 
 # ======================================================
 # Installing the built code:
@@ -939,7 +937,7 @@ EOF
 %if %{with debug_build}
 InstallPython debug \
   %{py_INSTSONAME_debug} \
-  -O0 \
+  "%{optflags_debug}" \
   %{LDVERSION_debug}
 %endif # with debug_build
 
@@ -1678,30 +1676,34 @@ CheckPython optimized
 # ======================================================
 
 %changelog
-* Wed Oct 9 2024 Kiran Belle <kbelle@redhat.com> - 3.11.7-1.6
-- Security fix for CVE-2024-6232
-Resolves: RHEL-57411
-
-* Fri Aug 23 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.7-1.5
+* Fri Aug 23 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.9-7
 - Security fix for CVE-2024-8088
-Resolves: RHEL-55960
+Resolves: RHEL-55959
 
-* Thu Aug 15 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.7-1.4
+* Thu Aug 15 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.9-6
 - Security fix for CVE-2024-6923
-Resolves: RHEL-53037
+Resolves: RHEL-53038
 
-* Thu Jul 04 2024 Lumír Balhar <lbalhar@redhat.com> - 3.11.7-1.3
+* Thu Jul 25 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.9-5
+- Properly propagate the optimization flags to C extensions
+
+* Thu Jul 18 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.9-4
+- Build Python with -O3
+- https://fedoraproject.org/wiki/Changes/Python_built_with_gcc_O3
+
+* Thu Jul 18 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.9-3
 - Security fix for CVE-2024-4032
-Resolves: RHEL-44097
+Resolves: RHEL-44099
 
-* Tue Jun 11 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.7-1.2
+* Tue Jun 11 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.9-2
 - Enable importing of hash-based .pyc files under FIPS mode
-Resolves: RHEL-40785
+Resolves: RHEL-40779
 
-* Thu May 16 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.7-1.1
-- Security fix for CVE-2023-6597
-- Fix tests for XMLPullParser with Expat with fixed CVE
-Resolves: RHEL-33884
+* Mon Apr 22 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.9-1
+- Rebase to 3.11.9
+- Security fixes for CVE-2023-6597 and CVE-2024-0450
+- Fix expat tests for the latest expat security release
+Resolves: RHEL-33677, RHEL-33689
 
 * Mon Jan 22 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.7-1
 - Rebase to 3.11.7

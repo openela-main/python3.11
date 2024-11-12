@@ -220,7 +220,7 @@ https://bugs.python.org/issue17258
  1 file changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/Lib/multiprocessing/connection.py b/Lib/multiprocessing/connection.py
-index 8b81f99..69c0b7e 100644
+index 59c61d2..7fc594e 100644
 --- a/Lib/multiprocessing/connection.py
 +++ b/Lib/multiprocessing/connection.py
 @@ -43,6 +43,10 @@ BUFSIZE = 8192
@@ -234,7 +234,7 @@ index 8b81f99..69c0b7e 100644
  _mmap_counter = itertools.count()
  
  default_family = 'AF_INET'
-@@ -752,7 +756,7 @@ def deliver_challenge(connection, authkey):
+@@ -753,7 +757,7 @@ def deliver_challenge(connection, authkey):
              "Authkey must be bytes, not {0!s}".format(type(authkey)))
      message = os.urandom(MESSAGE_LENGTH)
      connection.send_bytes(CHALLENGE + message)
@@ -243,7 +243,7 @@ index 8b81f99..69c0b7e 100644
      response = connection.recv_bytes(256)        # reject large message
      if response == digest:
          connection.send_bytes(WELCOME)
-@@ -768,7 +772,7 @@ def answer_challenge(connection, authkey):
+@@ -769,7 +773,7 @@ def answer_challenge(connection, authkey):
      message = connection.recv_bytes(256)         # reject large message
      assert message[:len(CHALLENGE)] == CHALLENGE, 'message = %r' % message
      message = message[len(CHALLENGE):]
@@ -446,10 +446,10 @@ index 56ae7a5..45fb403 100644
 +    if (_Py_hashlib_fips_error(exc, name)) return NULL; \
 +} while (0)
 diff --git a/configure.ac b/configure.ac
-index 52d5c1f..56aff78 100644
+index 7b4000f..8e2f0ad 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -7069,7 +7069,8 @@ PY_STDLIB_MOD([_sha512], [test "$with_builtin_sha512" = yes])
+@@ -7070,7 +7070,8 @@ PY_STDLIB_MOD([_sha512], [test "$with_builtin_sha512" = yes])
  PY_STDLIB_MOD([_sha3], [test "$with_builtin_sha3" = yes])
  PY_STDLIB_MOD([_blake2],
    [test "$with_builtin_blake2" = yes], [],
@@ -792,12 +792,12 @@ Date: Mon, 26 Aug 2019 19:39:48 +0200
 Subject: [PATCH 6/7] Guard against Python HMAC in FIPS mode
 
 ---
- Lib/hmac.py           | 13 +++++++++----
+ Lib/hmac.py           | 12 +++++++++---
  Lib/test/test_hmac.py | 10 ++++++++++
- 2 files changed, 19 insertions(+), 4 deletions(-)
+ 2 files changed, 19 insertions(+), 3 deletions(-)
 
 diff --git a/Lib/hmac.py b/Lib/hmac.py
-index 8b4f920..20ef96c 100644
+index 8b4eb2f..8930bda 100644
 --- a/Lib/hmac.py
 +++ b/Lib/hmac.py
 @@ -16,8 +16,9 @@ else:
@@ -812,16 +812,9 @@ index 8b4f920..20ef96c 100644
  
  # The size of the digests returned by HMAC depends on the underlying
  # hashing module used.  Use digest_size from the instance of HMAC instead.
-@@ -48,17 +49,18 @@ class HMAC:
-                    msg argument.  Passing it as a keyword argument is
-                    recommended, though not required for legacy API reasons.
-         """
--
-         if not isinstance(key, (bytes, bytearray)):
-             raise TypeError("key: expected bytes or bytearray, but got %r" % type(key).__name__)
- 
+@@ -55,10 +56,12 @@ class HMAC:
          if not digestmod:
-             raise TypeError("Missing required parameter 'digestmod'.")
+             raise TypeError("Missing required argument 'digestmod'.")
  
 -        if _hashopenssl and isinstance(digestmod, (str, _functype)):
 +        if _hashopenssl.get_fips_mode() or (_hashopenssl and isinstance(digestmod, (str, _functype))):
@@ -833,7 +826,7 @@ index 8b4f920..20ef96c 100644
                  self._init_old(key, msg, digestmod)
          else:
              self._init_old(key, msg, digestmod)
-@@ -69,6 +71,9 @@ class HMAC:
+@@ -69,6 +72,9 @@ class HMAC:
          self.block_size = self._hmac.block_size
  
      def _init_old(self, key, msg, digestmod):
@@ -844,7 +837,7 @@ index 8b4f920..20ef96c 100644
              digest_cons = digestmod
          elif isinstance(digestmod, str):
 diff --git a/Lib/test/test_hmac.py b/Lib/test/test_hmac.py
-index a39a2c4..0742a1c 100644
+index 1502fba..e40ca4b 100644
 --- a/Lib/test/test_hmac.py
 +++ b/Lib/test/test_hmac.py
 @@ -5,6 +5,7 @@ import hashlib
@@ -883,7 +876,7 @@ index a39a2c4..0742a1c 100644
      @unittest.skipUnless(sha256_module is not None, 'need _sha256')
      def test_with_sha256_module(self):
          h = hmac.HMAC(b"key", b"hash this!", digestmod=sha256_module.sha256)
-@@ -481,6 +489,7 @@ class SanityTestCase(unittest.TestCase):
+@@ -489,6 +497,7 @@ class UpdateTestCase(unittest.TestCase):
  
  class CopyTestCase(unittest.TestCase):
  
@@ -891,7 +884,7 @@ index a39a2c4..0742a1c 100644
      @hashlib_helper.requires_hashdigest('sha256')
      def test_attributes_old(self):
          # Testing if attributes are of same type.
-@@ -492,6 +501,7 @@ class CopyTestCase(unittest.TestCase):
+@@ -500,6 +509,7 @@ class CopyTestCase(unittest.TestCase):
          self.assertEqual(type(h1._outer), type(h2._outer),
              "Types of outer don't match.")
  
@@ -901,6 +894,7 @@ index a39a2c4..0742a1c 100644
          # Testing if the copy method created a real copy.
 -- 
 2.45.0
+
 
 From a0c3f9ac5a4e60ab22418a3196ae46ba34e9477b Mon Sep 17 00:00:00 2001
 From: Nikita Sobolev <mail@sobolevn.me>
@@ -938,3 +932,4 @@ index 0000000..82720d1
 +``_imp.source_hash()``.
 -- 
 2.45.0
+

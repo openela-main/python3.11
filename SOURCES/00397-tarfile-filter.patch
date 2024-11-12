@@ -1,4 +1,4 @@
-From 8b70605b594b3831331a9340ba764ff751871612 Mon Sep 17 00:00:00 2001
+From 0181d677dd7fd11bc19a211b3eb735ac3ad3d7fb Mon Sep 17 00:00:00 2001
 From: Petr Viktorin <encukou@gmail.com>
 Date: Mon, 6 Mar 2023 17:24:24 +0100
 Subject: [PATCH] CVE-2007-4559, PEP-706: Add filters for tarfile extraction
@@ -9,11 +9,11 @@ variable and config file.
 ---
  Lib/tarfile.py           |  42 +++++++++++++
  Lib/test/test_shutil.py  |   3 +-
- Lib/test/test_tarfile.py | 128 ++++++++++++++++++++++++++++++++++++++-
- 3 files changed, 169 insertions(+), 4 deletions(-)
+ Lib/test/test_tarfile.py | 127 ++++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 168 insertions(+), 4 deletions(-)
 
 diff --git a/Lib/tarfile.py b/Lib/tarfile.py
-index 130b5e0..3b7d8d5 100755
+index 612217b..dc59fc6 100755
 --- a/Lib/tarfile.py
 +++ b/Lib/tarfile.py
 @@ -72,6 +72,13 @@ __all__ = ["TarFile", "TarInfo", "is_tarfile", "TarError", "ReadError",
@@ -30,7 +30,7 @@ index 130b5e0..3b7d8d5 100755
  
  #---------------------------------------------------------
  # tar constants
-@@ -2211,6 +2218,41 @@ class TarFile(object):
+@@ -2219,6 +2226,41 @@ class TarFile(object):
          if filter is None:
              filter = self.extraction_filter
              if filter is None:
@@ -73,10 +73,10 @@ index 130b5e0..3b7d8d5 100755
              if isinstance(filter, str):
                  raise TypeError(
 diff --git a/Lib/test/test_shutil.py b/Lib/test/test_shutil.py
-index 9bf4145..f247b82 100644
+index 6728d30..2338b63 100644
 --- a/Lib/test/test_shutil.py
 +++ b/Lib/test/test_shutil.py
-@@ -1665,7 +1665,8 @@ class TestArchives(BaseTest, unittest.TestCase):
+@@ -1774,7 +1774,8 @@ class TestArchives(BaseTest, unittest.TestCase):
      def check_unpack_tarball(self, format):
          self.check_unpack_archive(format, filter='fully_trusted')
          self.check_unpack_archive(format, filter='data')
@@ -87,10 +87,10 @@ index 9bf4145..f247b82 100644
  
      def test_unpack_archive_tar(self):
 diff --git a/Lib/test/test_tarfile.py b/Lib/test/test_tarfile.py
-index cdea033..4724285 100644
+index 389da7b..5a43f9d 100644
 --- a/Lib/test/test_tarfile.py
 +++ b/Lib/test/test_tarfile.py
-@@ -2,7 +2,7 @@ import sys
+@@ -3,7 +3,7 @@ import sys
  import os
  import io
  from hashlib import sha256
@@ -99,7 +99,7 @@ index cdea033..4724285 100644
  from random import Random
  import pathlib
  import shutil
-@@ -2999,7 +2999,11 @@ class NoneInfoExtractTests(ReadTest):
+@@ -3049,7 +3049,11 @@ class NoneInfoExtractTests(ReadTest):
          tar = tarfile.open(tarname, mode='r', encoding="iso8859-1")
          cls.control_dir = pathlib.Path(TEMPDIR) / "extractall_ctrl"
          tar.errorlevel = 0
@@ -112,7 +112,7 @@ index cdea033..4724285 100644
          tar.close()
          cls.control_paths = set(
              p.relative_to(cls.control_dir)
-@@ -3674,7 +3678,8 @@ class TestExtractionFilters(unittest.TestCase):
+@@ -3868,7 +3872,8 @@ class TestExtractionFilters(unittest.TestCase):
          """Ensure the default filter does not warn (like in 3.12)"""
          with ArchiveMaker() as arc:
              arc.add('foo')
@@ -122,9 +122,9 @@ index cdea033..4724285 100644
              with self.check_context(arc.open(), None):
                  self.expect_file('foo')
  
-@@ -3844,6 +3849,123 @@ class TestExtractionFilters(unittest.TestCase):
+@@ -4037,6 +4042,122 @@ class TestExtractionFilters(unittest.TestCase):
+         with self.check_context(arc.open(errorlevel='boo!'), filtererror_filter):
              self.expect_exception(TypeError)  # errorlevel is not int
- 
  
 +    @contextmanager
 +    def rh_config_context(self, config_lines=None):
@@ -242,10 +242,9 @@ index cdea033..4724285 100644
 +            ):
 +                self.check_trusted_default(tar, tempdir)
 +
-+
- def setUpModule():
-     os_helper.unlink(TEMPDIR)
-     os.makedirs(TEMPDIR)
+ 
+ class OverwriteTests(archiver_tests.OverwriteTests, unittest.TestCase):
+     testdir = os.path.join(TEMPDIR, "testoverwrite")
 -- 
-2.41.0
+2.44.0
 
