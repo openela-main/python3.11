@@ -20,7 +20,7 @@ URL: https://www.python.org/
 #global prerel ...
 %global upstream_version %{general_version}%{?prerel}
 Version: %{general_version}%{?prerel:~%{prerel}}
-Release: 7%{?dist}
+Release: 7%{?dist}.1
 License: Python
 
 
@@ -397,6 +397,11 @@ Patch435: 00435-gh-121650-encode-newlines-in-headers-and-verify-headers-are-soun
 # 00436 # 1acd6db660ad1124ab7ae449a841608dd9d9062d
 # [CVE-2024-8088] gh-122905: Sanitize names in zipfile.Path.
 Patch436: 00436-cve-2024-8088-gh-122905-sanitize-names-in-zipfile-path.patch
+
+# 00437 #
+# CVE-2024-6232: gh-121285: Remove backtracking when parsing tarfile headers
+# Resolved upstream: https://github.com/python/cpython/issues/121285
+Patch437: 00437-CVE-2024-6232.patch
 
 # (New patches go here ^^^)
 #
@@ -1676,6 +1681,10 @@ CheckPython optimized
 # ======================================================
 
 %changelog
+* Wed Sep 11 2024 Lumír Balhar <lbalhar@redhat.com> - 3.11.9-7.1
+- Security fix for CVE-2024-6232
+Resolves: RHEL-57410
+
 * Fri Aug 23 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.9-7
 - Security fix for CVE-2024-8088
 Resolves: RHEL-55959
