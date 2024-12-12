@@ -16,7 +16,7 @@ URL: https://www.python.org/
 
 #  WARNING  When rebasing to a new Python version,
 #           remember to update the python3-docs package as well
-%global general_version %{pybasever}.10
+%global general_version %{pybasever}.11
 #global prerel ...
 %global upstream_version %{general_version}%{?prerel}
 Version: %{general_version}%{?prerel:~%{prerel}}
@@ -1855,6 +1855,10 @@ fi
 # ======================================================
 
 %changelog
+* Tue Dec 03 2024 Lumír Balhar <lbalhar@redhat.com> - 3.11.11-1
+- Update to 3.11.11
+Resolves: RHEL-64879
+
 * Mon Sep 09 2024 Tomáš Hrnčiar <thrnciar@redhat.com> - 3.11.10-1
 - Update to 3.11.10
 Resolves: RHEL-57400
