@@ -20,7 +20,7 @@ URL: https://www.python.org/
 #global prerel ...
 %global upstream_version %{general_version}%{?prerel}
 Version: %{general_version}%{?prerel:~%{prerel}}
-Release: 7%{?dist}.1
+Release: 7%{?dist}.2
 License: Python
 
 
@@ -402,6 +402,11 @@ Patch436: 00436-cve-2024-8088-gh-122905-sanitize-names-in-zipfile-path.patch
 # CVE-2024-6232: gh-121285: Remove backtracking when parsing tarfile headers
 # Resolved upstream: https://github.com/python/cpython/issues/121285
 Patch437: 00437-CVE-2024-6232.patch
+
+# 00443 #
+# CVE-2024-9287: Virtual environment (venv) activation scripts don't quote paths
+# Resolved upstream: https://github.com/python/cpython/issues/124651
+Patch443: 00443-CVE-2024-9287.patch
 
 # (New patches go here ^^^)
 #
@@ -1681,6 +1686,10 @@ CheckPython optimized
 # ======================================================
 
 %changelog
+* Mon Dec 09 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.9-7.2
+- Security fix for CVE-2024-9287
+Resolves: RHEL-64882
+
 * Wed Sep 11 2024 Lumír Balhar <lbalhar@redhat.com> - 3.11.9-7.1
 - Security fix for CVE-2024-6232
 Resolves: RHEL-57410
