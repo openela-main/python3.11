@@ -20,7 +20,7 @@ URL: https://www.python.org/
 #global prerel ...
 %global upstream_version %{general_version}%{?prerel}
 Version: %{general_version}%{?prerel:~%{prerel}}
-Release: 7%{?dist}.2
+Release: 7%{?dist}.3
 License: Python
 
 
@@ -407,6 +407,11 @@ Patch437: 00437-CVE-2024-6232.patch
 # CVE-2024-9287: Virtual environment (venv) activation scripts don't quote paths
 # Resolved upstream: https://github.com/python/cpython/issues/124651
 Patch443: 00443-CVE-2024-9287.patch
+
+# 00453 #
+# CVE-2024-7592: Denial of Service Vulnerability in http.cookies._unquote()
+# Resolved upstream: https://github.com/python/cpython/issues/123067
+Patch453: 00453-CVE-2024-7592.patch
 
 # (New patches go here ^^^)
 #
@@ -1686,6 +1691,10 @@ CheckPython optimized
 # ======================================================
 
 %changelog
+* Wed Apr 02 2025 Lumír Balhar <lbalhar@redhat.com> - 3.11.9-7.3
+- Security fix for CVE-2024-7592
+Resolves: RHEL-85299
+
 * Mon Dec 09 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.9-7.2
 - Security fix for CVE-2024-9287
 Resolves: RHEL-64882
