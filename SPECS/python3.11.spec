@@ -16,11 +16,11 @@ URL: https://www.python.org/
 
 #  WARNING  When rebasing to a new Python version,
 #           remember to update the python3-docs package as well
-%global general_version %{pybasever}.9
+%global general_version %{pybasever}.11
 #global prerel ...
 %global upstream_version %{general_version}%{?prerel}
 Version: %{general_version}%{?prerel:~%{prerel}}
-Release: 7%{?dist}.3
+Release: 2%{?dist}
 License: Python
 
 
@@ -359,7 +359,7 @@ Patch397: 00397-tarfile-filter.patch
 #
 # Upstream PR: https://github.com/python/cpython/pull/111116
 #
-# Second patch implmenets the possibility to restore the old behavior via
+# The patch implements the possibility to restore the old behavior via
 # config file or environment variable.
 Patch415: 00415-cve-2023-27043-gh-102988-reject-malformed-addresses-in-email-parseaddr-111116.patch
 
@@ -369,49 +369,9 @@ Patch415: 00415-cve-2023-27043-gh-102988-reject-malformed-addresses-in-email-par
 # Downstream only.
 Patch422: 00422-fix-expat-tests.patch
 
-# 00431 #
-# Security fix for CVE-2024-4032: incorrect IPv4 and IPv6 private ranges
-# Resolved upstream: https://github.com/python/cpython/issues/113171
-# Tracking bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2292921
-Patch431: 00431-CVE-2024-4032.patch
-
-# 00435 # d33a3c90daa3d5d2d7e67f6e9264e5438d9608a0
-# gh-121650: Encode newlines in headers, and verify headers are sound (GH-122233)
-#
-# Per RFC 2047:
-#
-# > [...] these encoding schemes allow the
-# > encoding of arbitrary octet values, mail readers that implement this
-# > decoding should also ensure that display of the decoded data on the
-# > recipient's terminal will not cause unwanted side-effects
-#
-# It seems that the "quoted-word" scheme is a valid way to include
-# a newline character in a header value, just like we already allow
-# undecodable bytes or control characters.
-# They do need to be properly quoted when serialized to text, though.
-#
-# This should fail for custom fold() implementations that aren't careful
-# about newlines.
-Patch435: 00435-gh-121650-encode-newlines-in-headers-and-verify-headers-are-sound-gh-122233.patch
-
-# 00436 # 1acd6db660ad1124ab7ae449a841608dd9d9062d
-# [CVE-2024-8088] gh-122905: Sanitize names in zipfile.Path.
-Patch436: 00436-cve-2024-8088-gh-122905-sanitize-names-in-zipfile-path.patch
-
-# 00437 #
-# CVE-2024-6232: gh-121285: Remove backtracking when parsing tarfile headers
-# Resolved upstream: https://github.com/python/cpython/issues/121285
-Patch437: 00437-CVE-2024-6232.patch
-
-# 00443 #
-# CVE-2024-9287: Virtual environment (venv) activation scripts don't quote paths
-# Resolved upstream: https://github.com/python/cpython/issues/124651
-Patch443: 00443-CVE-2024-9287.patch
-
-# 00453 #
-# CVE-2024-7592: Denial of Service Vulnerability in http.cookies._unquote()
-# Resolved upstream: https://github.com/python/cpython/issues/123067
-Patch453: 00453-CVE-2024-7592.patch
+# 00450 # 4ab8663661748eb994c09e4ae89f59eb84c5d3ea
+# CVE-2025-0938: Disallow square brackets ([ and ]) in domain names for parsed URLs
+Patch450: 00450-cve-2025-0938-disallow-square-brackets-and-in-domain-names-for-parsed-urls.patch
 
 # (New patches go here ^^^)
 #
@@ -1691,17 +1651,17 @@ CheckPython optimized
 # ======================================================
 
 %changelog
-* Wed Apr 02 2025 Lumír Balhar <lbalhar@redhat.com> - 3.11.9-7.3
-- Security fix for CVE-2024-7592
-Resolves: RHEL-85299
+* Mon Feb 10 2025 Charalampos Stratakis <cstratak@redhat.com> - 3.11.11-2
+- Security fix for CVE-2025-0938
+Resolves: RHEL-77262
 
-* Mon Dec 09 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.9-7.2
-- Security fix for CVE-2024-9287
-Resolves: RHEL-64882
+* Tue Dec 03 2024 Lumír Balhar <lbalhar@redhat.com> - 3.11.11-1
+- Update to 3.11.11
+Resolves: RHEL-64883
 
-* Wed Sep 11 2024 Lumír Balhar <lbalhar@redhat.com> - 3.11.9-7.1
-- Security fix for CVE-2024-6232
-Resolves: RHEL-57410
+* Mon Sep 09 2024 Tomáš Hrnčiar <thrnciar@redhat.com> - 3.11.10-1
+- Update to 3.11.10
+Resolves: RHEL-57412
 
 * Fri Aug 23 2024 Charalampos Stratakis <cstratak@redhat.com> - 3.11.9-7
 - Security fix for CVE-2024-8088
