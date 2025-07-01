@@ -16,7 +16,7 @@ URL: https://www.python.org/
 
 #  WARNING  When rebasing to a new Python version,
 #           remember to update the python3-docs package as well
-%global general_version %{pybasever}.11
+%global general_version %{pybasever}.13
 #global prerel ...
 %global upstream_version %{general_version}%{?prerel}
 Version: %{general_version}%{?prerel:~%{prerel}}
@@ -1855,6 +1855,11 @@ fi
 # ======================================================
 
 %changelog
+* Wed Jun 04 2025 Tomáš Hrnčiar <thrnciar@redhat.com> - 3.11.13-1
+- Update to 3.11.13
+- Security fixes for CVE-2025-4517, CVE-2025-4330, CVE-2025-4138, CVE-2024-12718, CVE-2025-4435
+Resolves: RHEL-98037, RHEL-98006, RHEL-98223, RHEL-98114, RHEL-98200
+
 * Tue Dec 03 2024 Lumír Balhar <lbalhar@redhat.com> - 3.11.11-1
 - Update to 3.11.11
 Resolves: RHEL-64879
