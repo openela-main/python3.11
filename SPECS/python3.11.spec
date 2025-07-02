@@ -20,7 +20,7 @@ URL: https://www.python.org/
 #global prerel ...
 %global upstream_version %{general_version}%{?prerel}
 Version: %{general_version}%{?prerel:~%{prerel}}
-Release: 2%{?dist}
+Release: 2%{?dist}.1
 License: Python
 
 
@@ -372,6 +372,13 @@ Patch422: 00422-fix-expat-tests.patch
 # 00450 # 4ab8663661748eb994c09e4ae89f59eb84c5d3ea
 # CVE-2025-0938: Disallow square brackets ([ and ]) in domain names for parsed URLs
 Patch450: 00450-cve-2025-0938-disallow-square-brackets-and-in-domain-names-for-parsed-urls.patch
+
+# 00465 #
+# Security fixes for:
+# CVE-2025-4517, CVE-2025-4330, CVE-2025-4138, CVE-2024-12718 and CVE-2025-4435 in the tarfile module.
+#
+# Resolved upstream: https://github.com/python/cpython/pull/135066
+Patch465: 00465-tarfile-cves.patch
 
 # (New patches go here ^^^)
 #
@@ -1651,6 +1658,10 @@ CheckPython optimized
 # ======================================================
 
 %changelog
+* Fri Jun 20 2025 Charalampos Stratakis <cstratak@redhat.com> - 3.11.11-2.1
+- Security fixes for CVE-2025-4517, CVE-2025-4330, CVE-2025-4138, CVE-2024-12718, CVE-2025-4435
+- Resolves: RHEL-98045, RHEL-98015, RHEL-98238, RHEL-98177, RHEL-98206
+
 * Mon Feb 10 2025 Charalampos Stratakis <cstratak@redhat.com> - 3.11.11-2
 - Security fix for CVE-2025-0938
 Resolves: RHEL-77262
