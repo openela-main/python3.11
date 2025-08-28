@@ -20,7 +20,7 @@ URL: https://www.python.org/
 #global prerel ...
 %global upstream_version %{general_version}%{?prerel}
 Version: %{general_version}%{?prerel:~%{prerel}}
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: Python
 
 
@@ -397,6 +397,14 @@ Patch415: 00415-cve-2023-27043-gh-102988-reject-malformed-addresses-in-email-par
 # which backport the CVE-2023-52425 fix.
 # Downstream only.
 Patch422: 00422-fix-expat-tests.patch
+
+# 00467 #
+# CVE-2025-8194
+#
+# tarfile now validates archives to ensure member offsets are non-negative.
+#
+# Upstream issue: https://github.com/python/cpython/issues/130577
+Patch467: 00467-CVE-2025-8194.patch
 
 # (New patches go here ^^^)
 #
@@ -1855,6 +1863,10 @@ fi
 # ======================================================
 
 %changelog
+* Thu Aug 21 2025 Charalampos Stratakis <cstratak@redhat.com> - 3.11.13-2
+- Security fix for CVE-2025-8194
+Resolves: RHEL-106338
+
 * Wed Jun 04 2025 Tomáš Hrnčiar <thrnciar@redhat.com> - 3.11.13-1
 - Update to 3.11.13
 - Security fixes for CVE-2025-4517, CVE-2025-4330, CVE-2025-4138, CVE-2024-12718, CVE-2025-4435
