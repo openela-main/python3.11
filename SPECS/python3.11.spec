@@ -16,11 +16,11 @@ URL: https://www.python.org/
 
 #  WARNING  When rebasing to a new Python version,
 #           remember to update the python3-docs package as well
-%global general_version %{pybasever}.11
+%global general_version %{pybasever}.13
 #global prerel ...
 %global upstream_version %{general_version}%{?prerel}
 Version: %{general_version}%{?prerel:~%{prerel}}
-Release: 2%{?dist}.2
+Release: 3%{?dist}
 License: Python
 
 
@@ -228,6 +228,7 @@ BuildRequires: valgrind-devel
 BuildRequires: xz-devel
 BuildRequires: zlib-devel
 
+BuildRequires: systemtap-sdt-devel
 BuildRequires: /usr/bin/dtrace
 
 # workaround http://bugs.python.org/issue19804 (test_uuid requires ifconfig)
@@ -369,16 +370,18 @@ Patch415: 00415-cve-2023-27043-gh-102988-reject-malformed-addresses-in-email-par
 # Downstream only.
 Patch422: 00422-fix-expat-tests.patch
 
-# 00450 # 4ab8663661748eb994c09e4ae89f59eb84c5d3ea
-# CVE-2025-0938: Disallow square brackets ([ and ]) in domain names for parsed URLs
-Patch450: 00450-cve-2025-0938-disallow-square-brackets-and-in-domain-names-for-parsed-urls.patch
-
-# 00465 #
-# Security fixes for:
-# CVE-2025-4517, CVE-2025-4330, CVE-2025-4138, CVE-2024-12718 and CVE-2025-4435 in the tarfile module.
+# 00462 # c9db492d8924b2d1a0991e36f3c2b4f9c2ec8942
+# Fix PySSL_SetError handling SSL_ERROR_SYSCALL
 #
-# Resolved upstream: https://github.com/python/cpython/pull/135066
-Patch465: 00465-tarfile-cves.patch
+# Python 3.10 changed from using SSL_write() and SSL_read() to SSL_write_ex() and
+# SSL_read_ex(), but did not update handling of the return value.
+#
+# Change error handling so that the return value is not examined.
+# OSError (not EOF) is now returned when retval is 0.
+#
+# This resolves the issue of failing tests when a system is
+# stressed on OpenSSL 3.5.
+Patch462: 00462-fix-pyssl_seterror-handling-ssl_error_syscall.patch
 
 # 00467 #
 # CVE-2025-8194
@@ -1666,13 +1669,19 @@ CheckPython optimized
 # ======================================================
 
 %changelog
-* Thu Aug 21 2025 Charalampos Stratakis <cstratak@redhat.com> - 3.11.11-2.2
+* Thu Aug 21 2025 Charalampos Stratakis <cstratak@redhat.com> - 3.11.13-3
 - Security fix for CVE-2025-8194
-Resolves: RHEL-106366
+Resolves: RHEL-106365
 
-* Fri Jun 20 2025 Charalampos Stratakis <cstratak@redhat.com> - 3.11.11-2.1
+* Wed Jul 23 2025 Charalampos Stratakis <cstratak@redhat.com> - 3.11.13-2
+- Fix PySSL_SetError handling SSL_ERROR_SYSCALL
+- This fixes random flakiness of test_ssl on stressed machines
+Resolves: RHEL-101551
+
+* Wed Jun 04 2025 Tomáš Hrnčiar <thrnciar@redhat.com> - 3.11.13-1
+- Update to 3.11.13
 - Security fixes for CVE-2025-4517, CVE-2025-4330, CVE-2025-4138, CVE-2024-12718, CVE-2025-4435
-- Resolves: RHEL-98045, RHEL-98015, RHEL-98238, RHEL-98177, RHEL-98206
+Resolves: RHEL-98044, RHEL-98014, RHEL-98237, RHEL-98176, RHEL-98205
 
 * Mon Feb 10 2025 Charalampos Stratakis <cstratak@redhat.com> - 3.11.11-2
 - Security fix for CVE-2025-0938
