@@ -20,7 +20,7 @@ URL: https://www.python.org/
 #global prerel ...
 %global upstream_version %{general_version}%{?prerel}
 Version: %{general_version}%{?prerel:~%{prerel}}
-Release: 2%{?dist}
+Release: 4%{?dist}
 License: Python
 
 
@@ -405,6 +405,25 @@ Patch422: 00422-fix-expat-tests.patch
 #
 # Upstream issue: https://github.com/python/cpython/issues/130577
 Patch467: 00467-CVE-2025-8194.patch
+
+# 00471 # f7ffc7e947b58a4d33c7f5bb69674af20fe4875d
+# CVE-2025-12084
+#
+# * gh-142145: Remove quadratic behavior in node ID cache clearing (GH-142146)
+# * gh-142754: Ensure that Element & Attr instances have the ownerDocument attribute (GH-142794)
+Patch471: 00471-cve-2025-12084.patch
+
+# 00472 # 2ba215eaba508b2cdd7c3acfdf3b9a6e32872274
+# CVE-2025-13836
+#
+# gh-119451: Fix a potential denial of service in http.client (GH-119454)
+#
+# Reading the whole body of the HTTP response could cause OOM if
+# the Content-Length value is too large even if the server does not send
+# a large amount of data. Now the HTTP client reads large data by chunks,
+# therefore the amount of consumed memory is proportional to the amount
+# of sent data.
+Patch472: 00472-cve-2025-13836.patch
 
 # (New patches go here ^^^)
 #
@@ -1863,6 +1882,14 @@ fi
 # ======================================================
 
 %changelog
+* Fri Jan 16 2026 Lumír Balhar <lbalhar@redhat.com> - 3.11.13-4
+- Security fix for CVE-2025-13836
+Resolves: RHEL-140992
+
+* Mon Jan 12 2026 Lumír Balhar <lbalhar@redhat.com> - 3.11.13-3
+- Security fix for CVE-2025-12084
+Resolves: RHEL-135390
+
 * Thu Aug 21 2025 Charalampos Stratakis <cstratak@redhat.com> - 3.11.13-2
 - Security fix for CVE-2025-8194
 Resolves: RHEL-106338
