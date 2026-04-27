@@ -20,7 +20,7 @@ URL: https://www.python.org/
 #global prerel ...
 %global upstream_version %{general_version}%{?prerel}
 Version: %{general_version}%{?prerel:~%{prerel}}
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: Python
 
 
@@ -461,6 +461,18 @@ Patch476: 00476-cve-2026-1299.patch
 #
 # Reject leading dashes in webbrowser URLs (GH-143931) (GH-146364)
 Patch478: 00478-cve-2026-4519.patch
+
+# 00480 # 9f4b1483ecfbc8c08117133c239fba544fcb42e7
+# CVE-2026-4786
+#
+# Fix webbrowser `%%action` substitution bypass of dash-prefix check
+Patch480: 00480-cve-2026-4786.patch
+
+# 00482 # 2a21454e658935990766df8c3c48af9363e8422a
+# CVE-2026-6100
+#
+# Fix a possible UAF in {LZMA,BZ2,_Zlib}Decompressor
+Patch482: 00482-cve-2026-6100.patch
 
 # (New patches go here ^^^)
 #
@@ -1919,6 +1931,10 @@ fi
 # ======================================================
 
 %changelog
+* Fri Apr 17 2026 Charalampos Stratakis <cstratak@redhat.com> - 3.11.13-7
+- Security fixes for CVE-2026-4786, CVE-2026-6100
+Resolves: RHEL-168129, RHEL-167891
+
 * Thu Mar 26 2026 Lukáš Zachar <lzachar@redhat.com> - 3.11.13-6
 - Security fix for CVE-2026-4519
 Resolves: RHEL-158028
