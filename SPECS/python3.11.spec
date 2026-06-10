@@ -20,7 +20,7 @@ URL: https://www.python.org/
 #global prerel ...
 %global upstream_version %{general_version}%{?prerel}
 Version: %{general_version}%{?prerel:~%{prerel}}
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: Python
 
 
@@ -212,7 +212,7 @@ BuildRequires: openssl-devel
 BuildRequires: pkgconfig
 BuildRequires: readline-devel
 BuildRequires: redhat-rpm-config
-BuildRequires: sqlite-devel
+BuildRequires: sqlite-devel >= 3.34.1-10
 BuildRequires: gdb
 
 BuildRequires: tar
@@ -602,6 +602,9 @@ Recommends: (%{pkgname}-tkinter%{?_isa} = %{version}-%{release} if tk%{?_isa})
 
 # The zoneinfo module needs tzdata
 Requires: tzdata
+
+# The sqlite3 needs version with (de)serialize API
+Requires: sqlite-libs >= 3.34.1-10
 
 %description -n %{pkgname}-libs
 This package contains runtime libraries for use by Python:
@@ -1737,6 +1740,10 @@ CheckPython optimized
 # ======================================================
 
 %changelog
+* Mon Jun 01 2026 Lukáš Zachar <lzachar@redhat.com> - 3.11.13-10
+- Depend on sqlite-libs with (de)serialize API
+Resolves: RHEL-178519
+
 * Fri Apr 17 2026 Charalampos Stratakis <cstratak@redhat.com> - 3.11.13-9
 - Security fixes for CVE-2026-4786, CVE-2026-6100
 Resolves: RHEL-168158, RHEL-167916
